@@ -30,3 +30,16 @@
 *.exe
 *.out
 *.app
+
+#Dir
+.vs/
+Debug/
+Release/
+x64/
+x86/
+textures/
+Simulator/lib/
+Simulator/Debug/
+Simulator/Release/
+Simulator/x86/
+Simulator/x64/
