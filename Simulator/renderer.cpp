@@ -213,30 +213,26 @@ namespace scmales {
 			
 			//获取设备数据
 			// std::cout << m_model->lPosition.x << " " << m_model->lPosition.y << " " << m_model->lPosition.z << std::endl;
-			auto bsPosition = glm::vec3(0.0f, 0.0f, 0.0f);
-			auto lPosition = glm::vec3( m_model->lPosition.x, m_model->lPosition.y, -1 * m_model->lPosition.z);
-			auto rPosition = glm::vec3( m_model->rPosition.x,  m_model->rPosition.y, -1 *  m_model->rPosition.z);
-			auto hmdPosition = glm::vec3( m_model->hmdPosition.x,  m_model->hmdPosition.y,-1 *  m_model->hmdPosition.z);
-
-			auto lRotation = glm::quat(m_model->lRotation.w, m_model->lRotation.x, m_model->lRotation.y, m_model->lRotation.z);
-			auto rRotation = glm::quat(m_model->rRotation.w, m_model->rRotation.x, m_model->rRotation.y, m_model->rRotation.z);
-			auto hmdRotation = glm::quat(m_model->hmdRotation.w, m_model->hmdRotation.x, m_model->hmdRotation.y, m_model->hmdRotation.z);
+			auto lPosition = glm::vec3( m_model->lPosition.x, m_model->lPosition.y, m_model->lPosition.z); 
+			auto rPosition = glm::vec3( m_model->rPosition.x, m_model->rPosition.y, m_model->rPosition.z);
+			auto hmdPosition = glm::vec3( m_model->hmdPosition.x, m_model->hmdPosition.y, m_model->hmdPosition.z);
 			glm::vec3 objectPositions[] = { lPosition, rPosition, hmdPosition };
+			
+			auto lRotation = glm::quat(m_model->lRotation.w, m_model->lRotation.x, m_model->lRotation.y,  m_model->lRotation.z);
+			auto rRotation = glm::quat(m_model->rRotation.w, m_model->rRotation.x, m_model->rRotation.y,  m_model->rRotation.z);
+			auto hmdRotation = glm::quat(m_model->hmdRotation.w, m_model->hmdRotation.x, m_model->hmdRotation.y,  m_model->hmdRotation.z);
 			glm::quat objectRotation[] = { lRotation, rRotation, hmdRotation };
 
+
 			m_shaders->use();
-			glm::mat4 trans = glm::mat4(1.0f);;
-			//trans = glm::rotate(trans, glm::radians(0.0f), glm::vec3(0.0, 0.0, 1.0));
-			trans = glm::scale(trans, glm::vec3(0.2, 0.2, 0.2));
-			m_shaders->setMat4("transform", trans);
 		
 			//画基站位置
-			glm::mat4 model = glm::mat4(1.0f); 
-			/*model = glm::translate(model, bsPosition);  
-			m_shaders->setMat4("model", model);*/
+			// glm::mat4 model = glm::mat4(1.0f); 
+			// model = glm::translate(model, bsPosition);  
+			// m_shaders->setMat4("model", model);
 
 			glm::mat4 view = glm::mat4(1.0f);
-			view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));		// 注意，我们将矩阵向我们要进行移动场景的反方向移动。
+			view = glm::lookAt(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 			m_shaders->setMat4("view", view);
 			
 			glBindVertexArray(VAO); //绑定顶点
@@ -254,10 +250,14 @@ namespace scmales {
 			//画交互设备
 			for (unsigned int i = 0;i < 3; i++)
 			{
-				model = glm::mat4(1.0f);
+				glm::mat4 trans = glm::mat4(1.0f);
+				trans = glm::mat4_cast(objectRotation[i]) * trans; //mat4_cast能把四元数转化成旋转矩阵
+				trans = glm::scale(trans, glm::vec3(0.2, 0.2, 0.2));  //让设备模型为合适大小
+				m_shaders->setMat4("transform", trans);
+
+				auto model = glm::mat4(1.0f);
 				model = glm::translate(model, objectPositions[i]);
-				model = glm::mat4_cast(objectRotation[i]) * model; //mat4_cast能把四元数转化成旋转矩阵
-				// model = glm::rotate(model, (float)glfwGetTime() * glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+
 				m_shaders->setMat4("model", model);
 				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 			}
